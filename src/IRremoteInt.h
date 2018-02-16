@@ -521,3 +521,23 @@ extern volatile irparams_t irparams;
 #define BLINKLED_OFF() (PORTB &= B11011111)
 #endif
 #endif
+
+
+/* --- Particle Platform Target Detection --- */
+#if defined(PARTICLE)
+
+/* ---<TARGET DETECTION>--- */
+#if defined(STM32F10X_MD) || !defined(PLATFORM_ID)
+/* Target is 'Core' */
+#define PIO_TARGET_CORE
+
+#elif defined(STM32F2XX) && defined(PLATFORM_ID)
+/* Target is 'Photon' */
+#define PIO_TARGET_PHOTON
+
+#else
+/* Target is unknown, or unsupported. */
+#error "--- ERROR: Device is not supported by this library. Only Particle Core and Particle Photon are supported. ---"
+
+#endif	/* <TARGET DETECTION> */
+#endif	/* defined(PARTICLE) */
