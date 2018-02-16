@@ -359,11 +359,114 @@ IRrecv::IRrecv(int recvpin)
   irparams.blinkflag = 0;
 }
 
+
 // initialization
 void IRrecv::enableIRIn() {
-  #if defined(PARTICLE)
-  timer.begin(timer_isr, 50, uSec);
-  #else
+
+#if defined(PARTICLE)
+
+	/**
+	 * \note The current platform is \b Particle -- using the \b SparkIntervalTimer library, we are
+	 *       able to support the \b Core and \b Photon as targets. The \b Core has 3 hardware timers
+	 *       available, all of which are associated with PWM pins, so it's OK to use automatic timer
+	 *       assignment here, unless the user has \c #define 'd a preferred timer. However, in the case
+	 *       the \b Photon as a target, there are \b 5 hardware timerss available; \b 2 of these timers
+	 *       are \b NOT associated with PWM, so it would be ideal to use one of these, unless (as before)
+	 *       the user has \c #define 'd otherwise. These timers that are available are \b TIM6 and
+	 *       \b TIM7 -- we can default to \b TIM7 on the \b Photon target.
+	 */
+
+/* ---(TARGET SELECTION)--- */
+#if defined(PIO_TARGET_CORE)
+
+/* --- Check if [IRREMOTE_RX_USE_TIMER] has been defined --- */
+#ifdef IRREMOTE_RX_USE_TIMER
+
+/* --- Check for valid timer number --- */
+#if ((IRREMOTE_RX_USE_TIMER != 2) || (IRREMOTE_RX_USE_TIMER != 3) || (IRREMOTE_RX_USE_TIMER != 4))
+
+/* Invalid Timer Number */
+#error "--- ERROR: An invalid timer was defined in IRREMOTE_RX_USE_TIMER -- please check your code!"
+
+#else	/* (timer number validity check -- OK) */
+
+#if (IRREMOTE_RX_USE_TIMER == 2)
+	/* Timer 2 */
+	timer.begin(timer_isr, 50, uSec, TIMER2);
+
+#elif (IRREMOTE_RX_USE_TIMER == 3)
+	/* Timer 3 */
+	timer.begin(timer_isr, 50, uSec, TIMER3);
+
+#elif (IRREMOTE_RX_USE_TIMER == 4)
+	/* Timer 4 */
+	timer.begin(timer_isr, 50, uSec, TIMER4);
+
+#endif	/* ([IRREMOTE_RX_USE_TIMER] was defined, and was valid) */
+
+#else	/* ([IRREMOTE_RX_USE_TIMER] was NOT defined -- use automatic allocation) */
+	/* Timer auto-allocation */
+	timer.begin(timer_isr, 50, uSec);
+
+#endif	/* (Check for definition of [IRREMOTE_RX_USE_TIMER]) */
+
+/* (end of [PIO_TARGET_CORE] conditions) */
+#elif defined(PIO_TARGET_PHOTON)
+
+
+/* --- Check if [IRREMOTE_RX_USE_TIMER_AUTOSELECT] is NOT defined --- */
+#ifndef IRREMOTE_RX_USE_TIMER_AUTOSELECT
+
+/* --- Check if [IRREMOTE_RX_USE_TIMER] has been defined --- */
+#ifdef IRREMOTE_RX_USE_TIMER
+
+/* --- Check for valid timer number --- */
+#if ((IRREMOTE_RX_USE_TIMER != 3) || (IRREMOTE_RX_USE_TIMER != 4) || (IRREMOTE_RX_USE_TIMER != 5) || (IRREMOTE_RX_USE_TIMER != 6) || (IRREMOTE_RX_USE_TIMER != 7))
+
+/* Invalid Timer Number */
+#error "--- ERROR: An invalid timer was defined in IRREMOTE_RX_USE_TIMER -- please check your code!"
+
+#else	/* (timer number validity check -- OK) */
+
+#if (IRREMOTE_RX_USE_TIMER == 3)
+	/* Timer 3 */
+	timer.begin(timer_isr, 50, uSec, TIMER3);
+
+#elif (IRREMOTE_RX_USE_TIMER == 4)
+	/* Timer 4 */
+	timer.begin(timer_isr, 50, uSec, TIMER4);
+
+#elif (IRREMOTE_RX_USE_TIMER == 5)
+	/* Timer 5 */
+	timer.begin(timer_isr, 50, uSec, TIMER5);
+
+#elif (IRREMOTE_RX_USE_TIMER == 6)
+	/* Timer 6 */
+	timer.begin(timer_isr, 50, uSec, TIMER6);
+
+#elif (IRREMOTE_RX_USE_TIMER == 7)
+	/* Timer 7 */
+	timer.begin(timer_isr, 50, uSec, TIMER7);
+
+#endif	/* ([IRREMOTE_RX_USE_TIMER] was defined, and was valid) */
+
+#else	/* ([IRREMOTE_RX_USE_TIMER] was NOT defined -- use [TIMER7]) */
+	/* Timer auto-allocation */
+	timer.begin(timer_isr, 50, uSec, TIMER7);
+
+#endif  /* (Check for definition of [IRREMOTE_RX_USE_TIMER]) */
+
+#else	/* ([IRREMOTE_RX_USE_TIMER_AUTOSELECT] was defined) */
+	/* Timer auto-allocation */
+	timer.begin(timer_isr, 50, uSec);
+
+#endif	/* (Check for definition of [IRREMOTE_RX_USE_TIMER_AUTOSELECT]) */
+
+/* (end of [PIO_TARGET_PHOTON] conditions) */
+#endif	/* ---(end of TARGET SELECTION)--- */
+
+#else	/* Non-PARTICLE platform */
+
   cli();
   // setup pulse clock timer interrupt
   //Prescale /8 (16M/8 = 0.5 microseconds per tick)
@@ -376,7 +479,8 @@ void IRrecv::enableIRIn() {
 
   TIMER_RESET;
   sei();  // enable interrupts
-  #endif
+
+#endif	/* defined(PARTICLE) */
 
   // initialize state machine variables
   irparams.rcvstate = STATE_IDLE;
