@@ -402,8 +402,11 @@ void IRrecv::enableIRIn() {
 	/* Timer 4 */
 	timer.begin(timer_isr, 50, uSec, TIMER4);
 
+<<<<<<< HEAD
 #endif	/* (IRREMOTE_RX_USE_TIMER == [2-4]) */
 
+=======
+>>>>>>> 8c103e0a499910e07ad6d5d6feed1043d6b0e129
 #endif	/* ([IRREMOTE_RX_USE_TIMER] was defined, and was valid) */
 
 #else	/* ([IRREMOTE_RX_USE_TIMER] was NOT defined -- use automatic allocation) */
@@ -450,8 +453,11 @@ void IRrecv::enableIRIn() {
 	/* Timer 7 */
 	timer.begin(timer_isr, 50, uSec, TIMER7);
 
+<<<<<<< HEAD
 #endif	/* (IRREMOTE_RX_USE_TIMER == [3-7]) */
 
+=======
+>>>>>>> 8c103e0a499910e07ad6d5d6feed1043d6b0e129
 #endif	/* ([IRREMOTE_RX_USE_TIMER] was defined, and was valid) */
 
 #else	/* ([IRREMOTE_RX_USE_TIMER] was NOT defined -- use [TIMER7]) */
